@@ -4,9 +4,9 @@ info:
   version: 1.0.0
   description: Auctios web
 paths:
-  /api/auctions/:
+  /api/subastas/:
     get:
-      operationId: auctions_list
+      operationId: subastas_list
       parameters:
       - name: page
         required: false
@@ -15,7 +15,7 @@ paths:
         schema:
           type: integer
       tags:
-      - auctions
+      - subastas
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -28,9 +28,9 @@ paths:
                 $ref: '#/components/schemas/PaginatedAuctionListCreateList'
           description: ''
     post:
-      operationId: auctions_create
+      operationId: subastas_create
       tags:
-      - auctions
+      - subastas
       requestBody:
         content:
           application/json:
@@ -54,9 +54,194 @@ paths:
               schema:
                 $ref: '#/components/schemas/AuctionListCreate'
           description: ''
-  /api/auctions/{id}/:
+  /api/subastas/{auction_id}/pujas/:
     get:
-      operationId: auctions_retrieve
+      operationId: subastas_pujas_list
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - subastas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBidListCreateList'
+          description: ''
+    post:
+      operationId: subastas_pujas_create
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BidDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BidDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BidDetail'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BidDetail'
+          description: ''
+  /api/subastas/{auction_id}/pujas/{id}:
+    get:
+      operationId: subastas_pujas_retrieve
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BidDetail'
+          description: ''
+    put:
+      operationId: subastas_pujas_update
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BidDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BidDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BidDetail'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BidDetail'
+          description: ''
+    patch:
+      operationId: subastas_pujas_partial_update
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBidDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBidDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBidDetail'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BidDetail'
+          description: ''
+    delete:
+      operationId: subastas_pujas_destroy
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/subastas/{id}:
+    get:
+      operationId: subastas_retrieve
       parameters:
       - in: path
         name: id
@@ -64,7 +249,7 @@ paths:
           type: integer
         required: true
       tags:
-      - auctions
+      - subastas
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -77,7 +262,7 @@ paths:
                 $ref: '#/components/schemas/AuctionDetail'
           description: ''
     put:
-      operationId: auctions_update
+      operationId: subastas_update
       parameters:
       - in: path
         name: id
@@ -85,7 +270,7 @@ paths:
           type: integer
         required: true
       tags:
-      - auctions
+      - subastas
       requestBody:
         content:
           application/json:
@@ -110,7 +295,7 @@ paths:
                 $ref: '#/components/schemas/AuctionDetail'
           description: ''
     patch:
-      operationId: auctions_partial_update
+      operationId: subastas_partial_update
       parameters:
       - in: path
         name: id
@@ -118,7 +303,7 @@ paths:
           type: integer
         required: true
       tags:
-      - auctions
+      - subastas
       requestBody:
         content:
           application/json:
@@ -142,7 +327,7 @@ paths:
                 $ref: '#/components/schemas/AuctionDetail'
           description: ''
     delete:
-      operationId: auctions_destroy
+      operationId: subastas_destroy
       parameters:
       - in: path
         name: id
@@ -150,7 +335,7 @@ paths:
           type: integer
         required: true
       tags:
-      - auctions
+      - subastas
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -158,9 +343,113 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/auctions/categories/:
+  /api/subastas/categoria/{id}:
     get:
-      operationId: auctions_categories_list
+      operationId: subastas_categoria_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDetail'
+          description: ''
+    put:
+      operationId: subastas_categoria_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryDetail'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDetail'
+          description: ''
+    patch:
+      operationId: subastas_categoria_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryDetail'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDetail'
+          description: ''
+    delete:
+      operationId: subastas_categoria_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - subastas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/subastas/categorias:
+    get:
+      operationId: subastas_categorias_list
       parameters:
       - name: page
         required: false
@@ -169,7 +458,7 @@ paths:
         schema:
           type: integer
       tags:
-      - auctions
+      - subastas
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -182,9 +471,9 @@ paths:
                 $ref: '#/components/schemas/PaginatedCategoryListCreateList'
           description: ''
     post:
-      operationId: auctions_categories_create
+      operationId: subastas_categorias_create
       tags:
-      - auctions
+      - subastas
       requestBody:
         content:
           application/json:
@@ -208,110 +497,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/CategoryListCreate'
           description: ''
-  /api/auctions/categories/{id}/:
-    get:
-      operationId: auctions_categories_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - auctions
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoryDetail'
-          description: ''
-    put:
-      operationId: auctions_categories_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - auctions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoryDetail'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/CategoryDetail'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/CategoryDetail'
-        required: true
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoryDetail'
-          description: ''
-    patch:
-      operationId: auctions_categories_partial_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - auctions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedCategoryDetail'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedCategoryDetail'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedCategoryDetail'
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoryDetail'
-          description: ''
-    delete:
-      operationId: auctions_categories_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - auctions
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '204':
-          description: No response body
 components:
   schemas:
     AuctionDetail:
@@ -426,6 +611,53 @@ components:
       - stock
       - thumbnail
       - title
+    BidDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        creation_date:
+          type: string
+          format: date-time
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        bidder:
+          type: string
+          maxLength: 100
+        auction:
+          type: integer
+      required:
+      - auction
+      - bidder
+      - creation_date
+      - id
+      - price
+    BidListCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        bidder:
+          type: string
+          maxLength: 100
+        creation_date:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - bidder
+      - creation_date
+      - id
+      - price
     CategoryDetail:
       type: object
       properties:
@@ -473,6 +705,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AuctionListCreate'
+    PaginatedBidListCreateList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BidListCreate'
     PaginatedCategoryListCreateList:
       type: object
       required:
@@ -538,6 +793,25 @@ components:
           format: uri
           maxLength: 200
         category:
+          type: integer
+    PatchedBidDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        creation_date:
+          type: string
+          format: date-time
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        bidder:
+          type: string
+          maxLength: 100
+        auction:
           type: integer
     PatchedCategoryDetail:
       type: object
