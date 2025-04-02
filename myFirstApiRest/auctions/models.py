@@ -36,6 +36,7 @@ class Auction(models.Model):
 
 
 class Bid(models.Model):
+    id = models.AutoField(primary_key=True)
     auction = models.ForeignKey(
         "Auction", on_delete=models.CASCADE, related_name="bids"
     )

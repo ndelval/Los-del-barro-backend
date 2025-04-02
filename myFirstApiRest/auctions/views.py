@@ -1,9 +1,13 @@
 from django.shortcuts import render
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+
 
 # Create your views here.
 #! Aquí defines la lógica que responde a las peticiones del usuario (GET, POST, PUT, DELETE...).
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
+
 from .models import Category, Auction, Bid
 from .serializers import (
     CategoryListCreateSerializer,
@@ -33,9 +37,10 @@ class AuctionListCreate(generics.ListCreateAPIView):
     def get_queryset(self):
         # Empezamos con TODAS las subastas disponibles
         queryset = Auction.objects.all()
+        params = self.request.query_params
 
-        # Ej: /subastas?texto=iphone
-        texto = self.request.query_params.get("texto")
+        # Ej: /auctions?search=iphone
+        texto = params.get("search")
         if texto:
             # Buscamos si la palabra aparece en el título o en la descripción
             queryset = queryset.filter(
@@ -46,21 +51,56 @@ class AuctionListCreate(generics.ListCreateAPIView):
             )
             # y lyego para mirar si contiene o si es mayor y tal se pone el atributo__query
 
-        # Ej: /subastas?categoria=3
-        categoria = self.request.query_params.get(
-            "categoria"
-        )  # esto es lo que se tendra que poner en la url
-        if categoria:
-            queryset = queryset.filter(category_id=categoria)
+        # Ej: /auctions?category=3
+        category_id = params.get('category', None)
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id)
+                queryset = queryset.filter(category=category)
+            except Category.DoesNotExist:
+                raise ValidationError(
+                    {"category": "Category not found."},
+                    code=status.HTTP_400_BAD_REQUEST
+                )
 
-        # Ej: /subastas?precioMin=200&precioMax=800
-        precio_min = self.request.query_params.get("precioMin")
-        precio_max = self.request.query_params.get("precioMax")
+        # Ej: /auctions?min_price=200&max_price=800
+        min_price = params.get('min_price', None)
+        max_price = params.get('max_price', None)
 
-        if precio_min:
-            queryset = queryset.filter(price__gte=precio_min)  # mayor o igual
-        if precio_max:
-            queryset = queryset.filter(price__lte=precio_max)  # menor o igual
+        if min_price:
+            try:
+                min_price = float(min_price)
+                if min_price <= 0:
+                    raise ValidationError(
+                        {"min_price": "Minimum price must be greater than 0."},
+                        code=status.HTTP_400_BAD_REQUEST
+                    )
+                queryset = queryset.filter(price__gte=min_price)
+            except ValueError:
+                raise ValidationError(
+                    {"min_price": "Minimum price must be a valid number."},
+                    code=status.HTTP_400_BAD_REQUEST
+                )
+        if max_price:
+            try:
+                max_price = float(max_price)
+                if max_price <= 0:
+                    raise ValidationError(
+                        {"max_price": "Maximum price must be greater than 0."},
+                        code=status.HTTP_400_BAD_REQUEST
+                    )
+                if min_price and max_price <= min_price:
+                    raise ValidationError(
+                        {"max_price": "Maximum price must be greater than minimum price."},
+                        code=status.HTTP_400_BAD_REQUEST
+                    )
+                queryset = queryset.filter(price__lte=max_price)
+            except ValueError:
+                raise ValidationError(
+                    {"max_price": "Maximum price must be a valid number."},
+                    code=status.HTTP_400_BAD_REQUEST
+                )
+
 
         # Devolvemos el queryset final con todos los filtros aplicados
         return queryset
@@ -80,7 +120,8 @@ class BidListCreate(generics.ListCreateAPIView):
         # 'self.kwargs' contiene los parámetros dinámicos de la URL (en este caso, 'auction_id').
         # Esto significa que, si vamos a '/auctions/1/bid/', solo obtendremos las pujas
         # de la subasta con 'auction_id=1'.
-        return Bid.objects.filter(auction_id=self.kwargs["auction_id"])
+        auction_id = self.kwargs['auction_id']
+        return Bid.objects.filter(auction__id=auction_id)
 
     # Definimos qué serializer usar para esta vista.
     def get_serializer_class(self):
@@ -99,7 +140,9 @@ class BidListCreate(generics.ListCreateAPIView):
         # 'self.kwargs["auction_id"]' obtiene el valor de 'auction_id' de la URL
         # y lo guarda en la nueva puja. Es necesario porque al crear una puja, debemos
         # asignarla a una subasta específica.
-        serializer.save(auction_id=self.kwargs["auction_id"])
+        auction_id = self.kwargs['auction_id']
+        auction = get_object_or_404(Auction, id=auction_id)
+        serializer.save(auction=auction, bidder=self.request.user.username)
 
 
 class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
@@ -107,6 +150,7 @@ class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     # - GET a /auctions/5/bid/12/ → para ver la puja con id=12 de la subasta con id=5
     # - PUT o PATCH a esa misma ruta → para modificar esa puja
     # - DELETE a esa misma ruta → para eliminarla
+    serializer_class = BidDetailSerializer
 
     def get_queryset(self):
         # Igual que antes, usamos self.kwargs["auction_id"] para filtrar las pujas
@@ -116,7 +160,4 @@ class BidRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         # - Así evitamos que alguien pueda acceder por error (o malicia) a una puja que no pertenece a esa subasta.
         return Bid.objects.filter(auction_id=self.kwargs["auction_id"])
 
-    def get_serializer_class(self):
-        # Siempre usamos BidDetailSerializer porque vamos a trabajar con una única puja
-        # y queremos mostrar/editar todos sus detalles.
-        return BidDetailSerializer
+
