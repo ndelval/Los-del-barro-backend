@@ -25,7 +25,12 @@ SECRET_KEY = "django-insecure-2i^zv%xul#1ojvra@_wmo*snvxrd6pbaf=_3c&yby)l9mcofi5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+<<<<<<< HEAD
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "0.0.0.0"]
+=======
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+
+>>>>>>> 8e571d03b6132ed18914e3eabb02ec25c567522b
 
 # Application definition
 
@@ -36,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "auctions",
     "rest_framework",
     "drf_spectacular",
@@ -44,6 +50,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
+<<<<<<< HEAD
+=======
+    "django.middleware.common.CommonMiddleware",
+>>>>>>> 8e571d03b6132ed18914e3eabb02ec25c567522b
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -129,7 +139,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 5,
+    "PAGE_SIZE": 8,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
