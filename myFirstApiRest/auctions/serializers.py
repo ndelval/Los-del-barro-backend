@@ -23,6 +23,9 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
 
 
 class AuctionListCreateSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(
+        source="category.name", read_only=True
+    )  # Es como que accedemos al nombre de nuestra foregin key
     creation_date = serializers.DateTimeField(
         format="%Y-%m-%dT%H:%M:%SZ", read_only=True
     )
@@ -73,6 +76,7 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
 
 
 class AuctionDetailSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source="category.name", read_only=True)
     creation_date = serializers.DateTimeField(
         format="%Y-%m-%dT%H:%M:%SZ", read_only=True
     )

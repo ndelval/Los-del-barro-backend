@@ -45,9 +45,13 @@ class AuctionListCreate(generics.ListCreateAPIView):
             )
 
         # Filtramos por categoría si se pasa el query param 'categoria'
-        categoria = self.request.query_params.get("categoria")
+        categoria = self.request.query_params.get("category")
         if categoria:
-            queryset = queryset.filter(category_id=categoria)
+            queryset = queryset.filter(category__name=categoria)
+
+        fechaMin = self.request.query_params.get("fechaMin")
+        if fechaMin:
+            queryset = queryset.filter(closing_date__lte=fechaMin)
 
         # Filtramos por precio mínimo y máximo si se pasan en los query params
         precio_min = self.request.query_params.get("precioMin")
