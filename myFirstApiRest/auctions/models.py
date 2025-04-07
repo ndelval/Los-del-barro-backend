@@ -1,7 +1,9 @@
 from django.db import models
-
+from django.utils import timezone
 
 #! En este fichero defines las tablas de la base de datos
+
+
 class Category(models.Model):
     name = models.CharField(
         max_length=50, blank=False, unique=True
@@ -29,16 +31,18 @@ class Auction(models.Model):
     closing_date = models.DateTimeField()
 
     class Meta:
-        ordering = ("id",)
+        ordering = ("id",)  # Las instancias se ordenarán por el id por defecto
 
     def __str__(self):
-        return self.title
+        return self.title  # Representación textual del objeto Auction
+
+    @property
+    def is_open(self):
+        return self.closing_date > timezone.now()
 
 
 class Bid(models.Model):
-    auction = models.ForeignKey(
-        "Auction", on_delete=models.CASCADE, related_name="bids"
-    )
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="bids")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     creation_date = models.DateTimeField(auto_now_add=True)
     bidder = models.CharField(max_length=100)
