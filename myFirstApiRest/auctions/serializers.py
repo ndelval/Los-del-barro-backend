@@ -140,10 +140,23 @@ class BidDetailSerializer(serializers.ModelSerializer):
                 "La subasta ya está cerrada. No se puede pujar."
             )
 
-        # Obtenemos la puja más alta actual para la subasta
-        highest_bid = Bid.objects.filter(auction=auction).aggregate(
-            max_price=Max("price")
-        )["max_price"]
+        instance_id = None
+        if self.instance:
+            instance_id = self.instance.id
+
+        # Obtenemos la puja más alta excluyendo la puja actual si estamos actualizando
+        if instance_id:
+            highest_bid = (
+                Bid.objects.filter(auction=auction)
+                .exclude(id=instance_id)
+                .aggregate(max_price=Max("price"))["max_price"]
+            )
+        else:
+            highest_bid = Bid.objects.filter(auction=auction).aggregate(
+                max_price=Max("price")
+            )["max_price"]
+
+        # Si no hay otras pujas o todas las pujas son la que estamos editando, usar precio base
         if highest_bid is None:
             highest_bid = auction.price
 
