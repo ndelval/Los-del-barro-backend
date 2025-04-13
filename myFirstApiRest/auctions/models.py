@@ -1,5 +1,9 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib.auth.models import User
+from users.models import CustomUser
 
 #! En este fichero defines las tablas de la base de datos
 
@@ -29,6 +33,9 @@ class Auction(models.Model):
     thumbnail = models.URLField()
     creation_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
+    auctioneer = models.ForeignKey(CustomUser, related_name='auctions',on_delete=models.CASCADE)
+
+
 
     class Meta:
         ordering = ("id",)  # Las instancias se ordenarán por el id por defecto
@@ -45,7 +52,8 @@ class Bid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="bids")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     creation_date = models.DateTimeField(auto_now_add=True)
-    bidder = models.CharField(max_length=100)
+    bidder = models.ForeignKey(CustomUser, related_name='bidder',on_delete=models.CASCADE)
+
 
     def __str__(self):
         return f"{self.bidder} - {self.price}€"
