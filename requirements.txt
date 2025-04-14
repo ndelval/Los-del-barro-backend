@@ -240,16 +240,8 @@ tifffile==2024.9.20
 tinycss2==1.4.0
 tokenizers==0.21.1
 toolz==1.0.0
-torch==2.6.0
-torch-geometric==2.6.1
-torch-utils==0.1.2
-torchaudio==2.5.1
-TorchCRF==1.1.0
-torchvision==0.20.1
 tornado==6.4.1
-tqdm==4.67.0
 traitlets==5.14.3
-transformers==4.51.0
 typer==0.15.1
 types-python-dateutil==2.9.0.20241206
 typing_extensions==4.12.2
