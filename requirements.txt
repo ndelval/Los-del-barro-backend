@@ -35,7 +35,6 @@ colorful==0.5.6
 comm==0.2.2
 confection==0.1.5
 contourpy==1.2.0
-CRF==0.0.1a1
 cryptography==42.0.5
 cycler==0.12.1
 cymem==2.0.11
@@ -83,7 +82,6 @@ gunicorn==23.0.0
 h11==0.14.0
 httpcore==1.0.7
 httpx==0.28.1
-huggingface-hub==0.30.1
 idna==3.7
 imageio==2.35.1
 importlib_metadata==7.1.0
@@ -121,8 +119,6 @@ marisa-trie==1.2.1
 Markdown==3.7
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
-matplotlib==3.8.3
-matplotlib-inline==0.1.7
 mdit-py-plugins==0.4.2
 mdurl==0.1.2
 memray==1.14.0
@@ -208,9 +204,6 @@ rpds-py==0.20.1
 rsa==4.7.2
 s3transfer==0.11.2
 safetensors==0.5.3
-scikit-image==0.24.0
-scikit-learn==1.4.1.post1
-scipy==1.12.0
 seaborn==0.13.2
 Send2Trash==1.8.3
 serial==0.0.97
@@ -220,9 +213,6 @@ smart-open==7.0.5
 sniffio==1.3.1
 sortedcontainers==2.4.0
 soupsieve==2.6
-spacy==3.8.4
-spacy-legacy==3.0.12
-spacy-loggers==1.0.5
 sqlparse==0.5.3
 srsly==2.5.1
 stack-data==0.6.3
@@ -238,7 +228,6 @@ thinc==8.3.4
 threadpoolctl==3.4.0
 tifffile==2024.9.20
 tinycss2==1.4.0
-tokenizers==0.21.1
 toolz==1.0.0
 tornado==6.4.1
 traitlets==5.14.3
