@@ -150,7 +150,7 @@ SPECTACULAR_SETTINGS = {
 
 TIME_ZONE = "Europe/Madrid"
 
-CORS_ALLOWED_ORIGINS = ["https://localhost:3000", "http://los-del-barro-backend.onrender.com"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "https://los-del-barro-backend.onrender.com"]
 
 CORS_ALLOW_CREDENTIALS = True
 
