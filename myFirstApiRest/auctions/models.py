@@ -33,9 +33,9 @@ class Auction(models.Model):
     thumbnail = models.URLField()
     creation_date = models.DateTimeField(auto_now_add=True)
     closing_date = models.DateTimeField()
-    auctioneer = models.ForeignKey(CustomUser, related_name='auctions',on_delete=models.CASCADE)
-
-
+    auctioneer = models.ForeignKey(
+        CustomUser, related_name="auctions", on_delete=models.CASCADE
+    )
 
     class Meta:
         ordering = ("id",)  # Las instancias se ordenarán por el id por defecto
@@ -52,8 +52,30 @@ class Bid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name="bids")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     creation_date = models.DateTimeField(auto_now_add=True)
-    bidder = models.ForeignKey(CustomUser, related_name='bidder',on_delete=models.CASCADE)
-
+    bidder = models.ForeignKey(
+        CustomUser, related_name="bidder", on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"{self.bidder} - {self.price}€"
+
+
+class Rating(models.Model):
+    auction = models.ForeignKey(
+        Auction, on_delete=models.CASCADE, related_name="ratings"
+    )
+    rating = models.IntegerField()
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
+
+
+class Commentary(models.Model):
+    title = models.CharField(max_length=150)
+    description = models.TextField()
+    creation_date = models.DateTimeField(auto_now_add=True)
+    last_edit_date = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(
+        CustomUser, related_name="commenter", on_delete=models.CASCADE
+    )
+    auction = models.ForeignKey(
+        Auction, on_delete=models.CASCADE, related_name="comments"
+    )
