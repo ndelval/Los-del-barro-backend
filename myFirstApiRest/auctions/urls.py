@@ -11,6 +11,7 @@ from .views import (
     RatingListCreateView,
     CommentaryListCreateView,
     CommentaryRetrieveUpdateDestroyView,
+    UserRatingListView,
 )
 
 app_name = "auctions"
@@ -32,6 +33,7 @@ urlpatterns = [
     ),
     path("users/", UserAuctionListView.as_view(), name="action-from-users"),
     path("users/bids/", UserBidListView.as_view(), name="bids-from-users"),
+    path("users/ratings/", UserRatingListView.as_view(), name="ratings-from-users"),
     path(
         "<int:auction_id>/ratings/",
         RatingListCreateView.as_view(),

@@ -92,6 +92,9 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
                 "Closing date must be at least 15 days after creation."
             )
 
+        # Para calcular algo haces rating = serializer.SerializerMethodFIeld(red_only=True)
+        # def get_rating(self, obj): return np.mean(obj.ratings)
+
         return value
 
 
@@ -115,6 +118,24 @@ class UserBidSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bid
         fields = ["id", "auction", "auction_title", "price", "creation_date", "bidder"]
+
+
+class UserRatingSerializer(serializers.ModelSerializer):
+    auction_title = serializers.CharField(source="auction.title", read_only=True)
+    auction_price = serializers.CharField(source="auction.price", read_only=True)
+    auction_category = serializers.CharField(source="auction.category", read_only=True)
+    auction_isOpen = serializers.CharField(source="auction.is_open", read_only=True)
+
+    class Meta:
+        model = Rating
+        fields = [
+            "id",
+            "auction_price",
+            "auction_title",
+            "auction_category",
+            "auction_isOpen",
+            "rating",
+        ]
 
 
 class RatingSerializer(serializers.ModelSerializer):

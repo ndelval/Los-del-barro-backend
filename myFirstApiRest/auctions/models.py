@@ -24,7 +24,7 @@ class Auction(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    rating = models.DecimalField(max_digits=3, decimal_places=2)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     stock = models.IntegerField()
     brand = models.CharField(max_length=100)
     category = models.ForeignKey(
@@ -72,10 +72,16 @@ class Commentary(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
     creation_date = models.DateTimeField(auto_now_add=True)
-    last_edit_date = models.DateTimeField(null=True, blank=True)
+    last_edit_date = models.DateTimeField(
+        null=True, blank=True
+    )  # EL NULL Y EL BLANCK ES PARA PODER HACERLO NULLO VAMOS OCIONAL
     user = models.ForeignKey(
         CustomUser, related_name="commenter", on_delete=models.CASCADE
     )
     auction = models.ForeignKey(
         Auction, on_delete=models.CASCADE, related_name="comments"
     )
+
+
+# Para imagenes haz IMageField(upload_to = "ryta")
+# para valores por defecto pones default

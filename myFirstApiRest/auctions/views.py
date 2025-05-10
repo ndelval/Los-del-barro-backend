@@ -10,6 +10,7 @@ from .serializers import (
     UserBidSerializer,
     RatingSerializer,
     CommentarySerializer,
+    UserRatingSerializer,
 )
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
@@ -104,6 +105,8 @@ class AuctionListCreate(generics.ListCreateAPIView):
         min_price = params.get("minPrice", None)
         max_price = params.get("maxPrice", None)
         min_date = params.get("minDate", None)
+        min_rating = params.get("minRating", None)
+        isOpen = params.get("isOpen", None)
         print(f"min_date recibido: {min_date}, tipo: {type(min_date)}")
         # Filtro por búsqueda de texto (titulo o descripción)
         if search:
@@ -189,6 +192,17 @@ class AuctionListCreate(generics.ListCreateAPIView):
                     {"minDate": "Formato de fecha no válido."},
                     code=status.HTTP_400_BAD_REQUEST,
                 )
+        if min_rating:
+            min_rating = float(min_rating)
+            queryset = queryset.filter(rating__gte=min_rating)
+
+        if isOpen:
+            is_open_value = isOpen.lower() == "true"
+
+            if is_open_value:
+                queryset = queryset.filter(closing_date__gt=timezone.now())
+            else:
+                queryset = queryset.filter(closing_date__lte=timezone.now())
 
         return queryset
 
@@ -309,6 +323,15 @@ class UserBidListView(generics.ListCreateAPIView):
         queryset = self.get_queryset()
         serializer = UserBidSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class UserRatingListView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserRatingSerializer
+
+    def get_queryset(self):
+        user_ratings = Rating.objects.filter(user=self.request.user)
+        return user_ratings
 
 
 class RatingListCreateView(generics.ListCreateAPIView):
