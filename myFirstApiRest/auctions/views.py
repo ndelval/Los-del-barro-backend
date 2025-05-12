@@ -1,6 +1,10 @@
 # Create your views here.
 from rest_framework import generics, status
-from .models import Category, Auction, Bid, Commentary, Rating
+
+from users.models import CustomUser
+
+# from myFirstApiRest.users.models import CustomUser
+from .models import Category, Auction, Bid, Commentary, Rating, Wallet
 from .serializers import (
     CategoryListCreateSerializer,
     CategoryDetailSerializer,
@@ -11,6 +15,7 @@ from .serializers import (
     RatingSerializer,
     CommentarySerializer,
     UserRatingSerializer,
+    WalletSerializer,
 )
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
@@ -232,13 +237,35 @@ class BidListCreateView(generics.ListCreateAPIView):
 
         highest_bid = auction.bids.order_by("-price").first()
         new_price = serializer.validated_data["price"]
+
+        # Validación para puja más alta
         if highest_bid and new_price <= highest_bid.price:
             raise ValidationError(
                 {"price": "La puja debe ser mayor a la puja más alta."},
                 code=status.HTTP_400_BAD_REQUEST,
             )
+
+        # Validación para puja positiva
         if new_price <= 0:
-            raise ValidationError("El precio de la puja debe ser positivo.")
+            raise ValidationError({"price": "El precio de la puja debe ser positivo."})
+
+        # Validación de saldo suficiente en la billetera
+        try:
+            wallet = Wallet.objects.get(user=self.request.user)
+            if wallet.money < new_price:
+                raise ValidationError(
+                    {
+                        "price": "No tienes suficiente saldo en tu billetera para realizar esta puja."
+                    },
+                    code=status.HTTP_400_BAD_REQUEST,
+                )
+        except Wallet.DoesNotExist:
+            raise ValidationError(
+                {
+                    "wallet": "No tienes una billetera creada. Crea una billetera antes de pujar."
+                },
+                code=status.HTTP_400_BAD_REQUEST,
+            )
 
         serializer.save(auction=auction, bidder=self.request.user)
 
@@ -298,6 +325,26 @@ class BidRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
         return bid
 
+    def perform_update(self, serializer):
+        new_price = serializer.validated_data["price"]
+        try:
+            wallet = Wallet.objects.get(user=self.request.user)
+            if float(wallet.money) < float(new_price):
+                raise ValidationError(
+                    {
+                        "price": "No tienes suficiente saldo en tu billetera para realizar esta puja."
+                    },
+                    code=status.HTTP_400_BAD_REQUEST,
+                )
+        except Wallet.DoesNotExist:
+            raise ValidationError(
+                {
+                    "wallet": "No tienes una billetera creada. Crea una billetera antes de pujar."
+                },
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer.save()
+
 
 class UserAuctionListView(APIView):
 
@@ -331,6 +378,7 @@ class UserRatingListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user_ratings = Rating.objects.filter(user=self.request.user)
+        # user_ratings = self.request.user.ratings.all() otra forma
         return user_ratings
 
 
@@ -379,7 +427,7 @@ class CommentaryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView)
 
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
+    def get_object(self):  # Esto consigue el objeto para luego editarlo
         auction_id = self.kwargs["auction_id"]
         comment_id = self.kwargs["comment_id"]
         # Esto solo te va a devolver una puja
@@ -394,3 +442,48 @@ class CommentaryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView)
     def perform_update(self, serializer):
         # Actualiza el comentario y establece la fecha actual como última edición
         serializer.save(last_edit_date=timezone.now())
+
+
+class WalletListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = WalletSerializer
+
+    def get_queryset(self):
+
+        return Wallet.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class WalletRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = WalletSerializer
+
+    def get_object(self):
+        # otra alternativa seria hacer return get_object_or_404(Wallet, user=self.request.user)
+        wallet = Wallet.objects.get(
+            user=self.request.user
+        )  # Con filter devuelves un queryset a no ser que hagas first()
+        return wallet
+
+    def perform_update(self, serializer):
+        # Si están añadiendo dinero, lo sumamos al saldo existente
+        if "money" in serializer.validated_data:
+            try:
+                money_to_add = float(serializer.validated_data["money"])
+                # Obtenemos la billetera actual
+                wallet = self.get_object()
+                # Sumamos el dinero al saldo actual
+                total_money = float(wallet.money) + money_to_add
+                if total_money < 0:
+                    raise ValidationError(
+                        "No puedes retirar mas cantidad de la que tienes"
+                    )
+                # Actualizamos el valor en los datos validados antes de guardar
+                serializer.validated_data["money"] = total_money
+            except ValueError:
+                raise ValidationError({"money": "El valor debe ser un número válido."})
+
+        # Guardamos los cambios
+        serializer.save()

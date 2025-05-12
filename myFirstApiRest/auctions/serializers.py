@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Category, Auction, Bid, Rating, Commentary
+from .models import Category, Auction, Bid, Rating, Commentary, Wallet
 from drf_spectacular.utils import extend_schema_field
 from datetime import timedelta
 
@@ -24,12 +24,12 @@ class AuctionListCreateSerializer(serializers.ModelSerializer):
     )
     closing_date = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     isOpen = serializers.SerializerMethodField(read_only=True)
-    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_name = serializers.CharField(source="category.name", read_only=True)
 
     class Meta:
         model = Auction
-        fields = '__all__'
-        read_only_fields = ['auctioneer','category_name']
+        fields = "__all__"
+        read_only_fields = ["auctioneer", "category_name"]
 
     @extend_schema_field(serializers.BooleanField())
     def get_isOpen(self, obj):
@@ -158,3 +158,29 @@ class CommentarySerializer(serializers.ModelSerializer):
         model = Commentary
         fields = "__all__"
         read_only_fields = ["id", "user", "auction", "creation_date", "last_edit_date"]
+
+
+class WalletSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Wallet
+        fields = "__all__"
+        read_only_fields = ["user"]
+
+    def validate_credit_card(self, value):
+        # Como ahora es CharField, no necesitamos convertir a string
+        if len(value) < 13 or len(value) > 19:
+            raise serializers.ValidationError(
+                "Credit card length must be between 13 and 19 digits"
+            )
+
+        # Validar que solo contenga dígitos
+        if not value.isdigit():
+            raise serializers.ValidationError("Credit card must contain only digits")
+
+        return value
+
+    def validate_money(self, value):
+        if abs(value) < 10:
+            raise serializers.ValidationError("Minimum of 10$")
+        return value

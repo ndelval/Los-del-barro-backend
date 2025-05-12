@@ -53,7 +53,7 @@ class Bid(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     creation_date = models.DateTimeField(auto_now_add=True)
     bidder = models.ForeignKey(
-        CustomUser, related_name="bidder", on_delete=models.CASCADE
+        CustomUser, related_name="bids", on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -65,7 +65,9 @@ class Rating(models.Model):
         Auction, on_delete=models.CASCADE, related_name="ratings"
     )
     rating = models.IntegerField()
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="ratings"
+    )
 
 
 class Commentary(models.Model):
@@ -81,6 +83,21 @@ class Commentary(models.Model):
     auction = models.ForeignKey(
         Auction, on_delete=models.CASCADE, related_name="comments"
     )
+
+
+class Wallet(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="wallet"
+    )
+    credit_card = models.CharField(
+        max_length=19, null=True, blank=True
+    )  # Permitir valores nulos
+    money = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )  # Valor predeterminado de 0
+
+    def __str__(self):
+        return f"Wallet de {self.user.username}"
 
 
 # Para imagenes haz IMageField(upload_to = "ryta")
