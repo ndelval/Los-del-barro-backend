@@ -80,7 +80,6 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
         if value <= now:
             raise serializers.ValidationError("Closing date must be greater than now.")
 
-        # En la edición, ya existe la fecha de creación en la base de datos
         auction = self.instance  # Obtenemos la instancia actual del modelo
 
         # Si la subasta ya existe, tomamos su fecha de creación real
@@ -92,10 +91,6 @@ class AuctionDetailSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Closing date must be at least 15 days after creation."
             )
-
-        # Para calcular algo haces rating = serializer.SerializerMethodFIeld(red_only=True)
-        # def get_rating(self, obj): return np.mean(obj.ratings)
-
         return value
 
 
@@ -144,7 +139,7 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = "__all__"
-        read_only_fields = ["auction", "user", "id"]  # Estos no se envian en el POST
+        read_only_fields = ["auction", "user", "id"]
 
     def validate_rating(self, value):
         if value < 0 or value > 5:
@@ -186,7 +181,7 @@ class WalletSerializer(serializers.ModelSerializer):
         read_only_fields = ["user"]
 
     def validate_credit_card(self, value):
-        # Como ahora es CharField, no necesitamos convertir a string
+
         if len(value) < 13 or len(value) > 19:
             raise serializers.ValidationError(
                 "Credit card length must be between 13 and 19 digits"

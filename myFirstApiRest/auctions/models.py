@@ -74,9 +74,7 @@ class Commentary(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
     creation_date = models.DateTimeField(auto_now_add=True)
-    last_edit_date = models.DateTimeField(
-        null=True, blank=True
-    )  # EL NULL Y EL BLANCK ES PARA PODER HACERLO NULLO VAMOS OCIONAL
+    last_edit_date = models.DateTimeField(null=True, blank=True)
     user = models.ForeignKey(
         CustomUser, related_name="commenter", on_delete=models.CASCADE
     )
@@ -89,16 +87,8 @@ class Wallet(models.Model):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="wallet"
     )
-    credit_card = models.CharField(
-        max_length=19, null=True, blank=True
-    )  # Permitir valores nulos
-    money = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0
-    )  # Valor predeterminado de 0
+    credit_card = models.CharField(max_length=19, null=True, blank=True)
+    money = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
         return f"Wallet de {self.user.username}"
-
-
-# Para imagenes haz IMageField(upload_to = "ryta")
-# para valores por defecto pones default

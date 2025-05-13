@@ -3,7 +3,7 @@ from rest_framework import generics, status
 
 from users.models import CustomUser
 
-# from myFirstApiRest.users.models import CustomUser
+
 from .models import Category, Auction, Bid, Commentary, Rating, Wallet
 from .serializers import (
     CategoryListCreateSerializer,
@@ -31,76 +31,25 @@ from django.shortcuts import get_object_or_404
 
 
 class CategoryListCreate(generics.ListCreateAPIView):
-    """
-    FLUJO DE CategoryListCreate(generics.ListCreateAPIView):
-    -----------------------------------------------------
-    1. PARA GET (listar categorías):
-    - Usa queryset = Category.objects.all() para obtener todos los objetos
-    - Los serializa con el serializer_class (CategoryListCreateSerializer)
-    - Devuelve JSON con todas las categorías
-
-    2. PARA POST (crear categoría):
-    - Recibe datos JSON en la petición
-    - Usa el serializer_class (CategoryListCreateSerializer) para validar
-    - Si es válido, crea nueva categoría en la base de datos
-    - Devuelve la categoría creada en formato JSON
-    """
-
     permission_classes = [AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategoryListCreateSerializer
 
 
 class CategoryRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
-    """
-    FLUJO DE CategoryRetrieveUpdateDestroy (RetrieveUpdateDestroyAPIView):
-    --------------------------------------------------------------------
-    Esta vista maneja operaciones sobre una categoría específica por ID (/categories/1/)
-
-    1. PARA GET (obtener una categoría):
-    - Recibe URL con ID: /api/auctions/categories/5/
-    - Busca la categoría con ID=5 en queryset = Category.objects.all()
-    - La serializa con CategoryDetailSerializer
-    - Devuelve JSON con los datos de esa categoría
-
-    2. PARA PUT/PATCH (actualizar categoría):
-    - Recibe URL con ID y datos JSON en la petición
-    - Busca la categoría con ese ID
-    - Valida los datos con CategoryDetailSerializer
-    - Actualiza la categoría en la base de datos
-    - Devuelve la categoría actualizada en formato JSON
-
-    3. PARA DELETE (eliminar categoría):
-    - Recibe URL con ID: /api/auctions/categories/5/
-    - Busca y elimina la categoría con ID=5
-    - Devuelve respuesta 204 No Content (sin datos)
-
-    """
-
     permission_classes = [AllowAny]
     queryset = Category.objects.all()
     serializer_class = CategoryDetailSerializer
 
 
 class AuctionListCreate(generics.ListCreateAPIView):
-    """
-    FLUJO INTERNO DE ListCreateAPIView:
-    ----------------------------------
-    - Recibe petición HTTP
-    - IDENTIFICA el método (GET o POST)
-    - REDIRECCIONA a la función apropiada:
-    - GET → list() → usa get_queryset()
-    - POST → create() → usa perform_create()
-
-    Cada método solo se ejecuta cuando corresponde.
-    """
 
     serializer_class = AuctionListCreateSerializer
 
     def get_permissions(self):
         if self.request.method == "POST":
             return [IsAuthenticated()]
-        return [AllowAny()]  # o deja que sea público el GET
+        return [AllowAny()]
 
     # Se va a ejecutar cuando se haga un GET que llamara al list y eso llamara a esto
     def get_queryset(self):
@@ -140,7 +89,6 @@ class AuctionListCreate(generics.ListCreateAPIView):
 
         # Filtro por rango de precios
 
-        # Parseo y validación
         if min_price is not None:
             try:
                 min_price = float(min_price)
@@ -198,10 +146,11 @@ class AuctionListCreate(generics.ListCreateAPIView):
                     {"minDate": "Formato de fecha no válido."},
                     code=status.HTTP_400_BAD_REQUEST,
                 )
+        # Filtro por rating
         if min_rating:
             min_rating = float(min_rating)
             queryset = queryset.filter(rating__gte=min_rating)
-
+        # Filtro por si una subasta esta abierta o no
         if isOpen:
             is_open_value = isOpen.lower() == "true"
 
@@ -212,7 +161,6 @@ class AuctionListCreate(generics.ListCreateAPIView):
 
         return queryset
 
-    # Se va a ejecutar cuadno se haga un POST que llamara al create() y eso llamara a esto
     def perform_create(self, serializer):
         serializer.save(auctioneer=self.request.user)
 
@@ -279,34 +227,6 @@ class BidListCreateView(generics.ListCreateAPIView):
 
 
 class BidRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    FLUJO DE EDICIÓN DE PUJAS:
-    -------------------------
-    1. Cliente envía PUT/PATCH a /api/auctions/{auction_id}/bids/{bid_id}/
-    - Ejemplo: PUT /api/auctions/5/bids/12/ con {"price": 150}
-
-    2. BidRetrieveUpdateDestroyView recibe la petición y:
-    - Extrae auction_id=5 y bid_id=12 de la URL
-    - Ejecuta get_object() con estas validaciones:
-
-    a) ¿La puja existe y pertenece a la subasta?
-        bid = get_object_or_404(Bid, id=bid_id, auction__id=auction_id)
-        ↑ Si no existe: devuelve error 404
-
-    b) ¿El usuario actual es quien hizo la puja?
-        if bid.bidder.username != self.request.user.username:
-            raise ValidationError("Solo puedes modificar tus pujas.")
-        ↑ Si no es tu puja: error 400
-
-    c) ¿La subasta sigue abierta?
-        if bid.auction.closing_date <= timezone.now():
-            raise ValidationError("No puedes modificar pujas en subastas cerradas.")
-        ↑ Si ya cerró: error 400
-
-    3. Si pasa todas las validaciones:
-    - Se actualiza la puja con los datos enviados
-    - Se devuelve respuesta 200 OK con los datos actualizados
-    """
 
     serializer_class = BidSerializer
     permission_classes = [IsAuthenticated]
@@ -314,8 +234,7 @@ class BidRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     def get_object(self):
         auction_id = self.kwargs["auction_id"]
         bid_id = self.kwargs["bid_id"]
-        # Esto solo te va a devolver una puja
-        # Como quiero acceder al campo de otra tabla pongo el nombre de la tabla __ campo
+
         bid = get_object_or_404(Bid, id=bid_id, auction__id=auction_id)
 
         if bid.bidder.username != self.request.user.username:
@@ -362,8 +281,7 @@ class UserBidListView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Aqui tienes que devolver un conjunto de objetoc por eso es necesairo el filter asi
-        # No necesitas auction_id si solo quieres las pujas del usuario
+
         user_bids = Bid.objects.filter(bidder=self.request.user)
         return user_bids
 
@@ -379,7 +297,7 @@ class UserRatingListView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user_ratings = Rating.objects.filter(user=self.request.user)
-        # user_ratings = self.request.user.ratings.all() otra forma
+
         return user_ratings
 
 
@@ -388,7 +306,7 @@ class RatingListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Esto me devuelve el objeto auction que realmente es lo que esta en la entrada de la tabla
+
         auction = get_object_or_404(Auction, id=self.kwargs["auction_id"])
         return Rating.objects.filter(user=self.request.user, auction=auction)
 
@@ -422,7 +340,7 @@ class CommentaryListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentarySerializer
 
     def get_queryset(self):
-        # Esto me devuelve el objeto auction que realmente es lo que esta en la entrada de la tabla
+
         auction = get_object_or_404(Auction, id=self.kwargs["auction_id"])
         return Commentary.objects.filter(auction=auction)
 
@@ -439,8 +357,7 @@ class CommentaryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView)
     def get_object(self):  # Esto consigue el objeto para luego editarlo
         auction_id = self.kwargs["auction_id"]
         comment_id = self.kwargs["comment_id"]
-        # Esto solo te va a devolver una puja
-        # Como quiero acceder al campo de otra tabla pongo el nombre de la tabla __ campo
+
         comment = get_object_or_404(Commentary, id=comment_id, auction__id=auction_id)
 
         if comment.user.username != self.request.user.username:
@@ -470,10 +387,8 @@ class WalletRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = WalletSerializer
 
     def get_object(self):
-        # otra alternativa seria hacer return get_object_or_404(Wallet, user=self.request.user)
-        wallet = Wallet.objects.get(
-            user=self.request.user
-        )  # Con filter devuelves un queryset a no ser que hagas first()
+
+        wallet = Wallet.objects.get(user=self.request.user)
         return wallet
 
     def perform_update(self, serializer):
@@ -481,9 +396,9 @@ class WalletRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         if "money" in serializer.validated_data:
             try:
                 money_to_add = float(serializer.validated_data["money"])
-                # Obtenemos la billetera actual
+
                 wallet = self.get_object()
-                # Sumamos el dinero al saldo actual
+                # Sumamos el dinero recibido por el PUT al saldo actual
                 total_money = float(wallet.money) + money_to_add
                 if total_money < 0:
                     raise ValidationError(
@@ -494,5 +409,4 @@ class WalletRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             except ValueError:
                 raise ValidationError({"money": "El valor debe ser un número válido."})
 
-        # Guardamos los cambios
         serializer.save()
