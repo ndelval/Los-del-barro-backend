@@ -14,6 +14,7 @@ from .views import (
     UserRatingListView,
     WalletListCreateView,
     WalletRetrieveUpdateDestroyView,
+    UserCommentaryListView,
 )
 
 app_name = "auctions"
@@ -36,6 +37,9 @@ urlpatterns = [
     path("users/", UserAuctionListView.as_view(), name="action-from-users"),
     path("users/bids/", UserBidListView.as_view(), name="bids-from-users"),
     path("users/ratings/", UserRatingListView.as_view(), name="ratings-from-users"),
+    path(
+        "users/comments/", UserCommentaryListView.as_view(), name="comments-from-users"
+    ),
     path("users/wallet/", WalletListCreateView.as_view(), name="wallet-create"),
     path(
         "users/wallet/update/",

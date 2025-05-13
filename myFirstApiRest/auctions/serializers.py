@@ -152,6 +152,24 @@ class RatingSerializer(serializers.ModelSerializer):
         return value
 
 
+class UserCommentarySerializer(serializers.ModelSerializer):
+    auction_title = serializers.CharField(source="auction.title", read_only=True)
+    auction_price = serializers.CharField(source="auction.price", read_only=True)
+    auction_category = serializers.CharField(source="auction.category", read_only=True)
+    auction_isOpen = serializers.CharField(source="auction.is_open", read_only=True)
+
+    class Meta:
+        model = Commentary
+        fields = [
+            "id",
+            "auction_price",
+            "auction_title",
+            "auction_category",
+            "auction_isOpen",
+            "description",
+        ]
+
+
 class CommentarySerializer(serializers.ModelSerializer):
 
     class Meta:

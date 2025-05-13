@@ -16,6 +16,7 @@ from .serializers import (
     CommentarySerializer,
     UserRatingSerializer,
     WalletSerializer,
+    UserCommentarySerializer,
 )
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
@@ -407,6 +408,14 @@ class RatingListCreateView(generics.ListCreateAPIView):
         else:
             auction.rating = 1
         auction.save(update_fields=["rating"])
+
+
+class UserCommentaryListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserCommentarySerializer
+
+    def get_queryset(self):
+        return Commentary.objects.filter(user=self.request.user)
 
 
 class CommentaryListCreateView(generics.ListCreateAPIView):
