@@ -23,7 +23,7 @@ from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .permissions import IsOwnerOrAdmin, IsBidOwnerOrAdmin
+from .permissions import IsOwnerOrAdmin, IsBidOwnerOrAdmin, IsCommentOwnerOrAdmin
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.utils.dateparse import parse_datetime, parse_date
 from django.utils import timezone
@@ -319,6 +319,7 @@ class RatingListCreateView(generics.ListCreateAPIView):
         auction.save(update_fields=["rating"])
 
 
+
 class UserCommentaryListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserCommentarySerializer
@@ -340,25 +341,22 @@ class CommentaryListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user, auction=auction)
 
 
+
+
 class CommentaryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CommentarySerializer
+    permission_classes = [IsAuthenticated, IsCommentOwnerOrAdmin]
 
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):  # Esto consigue el objeto para luego editarlo
-        auction_id = self.kwargs["auction_id"]
-        comment_id = self.kwargs["comment_id"]
-
-        comment = get_object_or_404(Commentary, id=comment_id, auction__id=auction_id)
-
-        if comment.user.username != self.request.user.username:
-            raise ValidationError("Solo puedes modificar tus comentarios.")
-
-        return comment
-
+    def get_queryset(self):
+        auction_id = self.kwargs['auction_id']
+        auction = Auction.objects.get(id=auction_id)
+        return Commentary.objects.filter(auction=auction)
+    
     def perform_update(self, serializer):
-        # Actualiza el comentario y establece la fecha actual como última edición
         serializer.save(last_edit_date=timezone.now())
+
+
+
 
 
 class WalletListCreateView(generics.ListCreateAPIView):

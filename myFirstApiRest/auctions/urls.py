@@ -57,7 +57,7 @@ urlpatterns = [
         name="comment-list-create",
     ),
     path(
-        "<int:auction_id>/comments/<int:comment_id>/",
+        "<int:auction_id>/comments/<int:pk>/",
         CommentaryRetrieveUpdateDestroyView.as_view(),
         name="comment-retrieve-update-destroy",
     ),
