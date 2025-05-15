@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Category, Auction, Bid, Rating, Commentary, Wallet
+from .models import Category, Auction, Bid, Rating, Commentary, Wallet, Favorites
 from drf_spectacular.utils import extend_schema_field
 from datetime import timedelta
 
@@ -197,3 +197,10 @@ class WalletSerializer(serializers.ModelSerializer):
         if abs(value) < 10:
             raise serializers.ValidationError("Minimum of 10$")
         return value
+
+
+class FavoritesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorites
+        fields = ["id", "user", "auction", "isFavorite"]
+        read_only_fields = ["id", "user", "auction"]

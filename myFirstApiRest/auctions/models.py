@@ -92,3 +92,17 @@ class Wallet(models.Model):
 
     def __str__(self):
         return f"Wallet de {self.user.username}"
+
+
+class Favorites(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="favorites"
+    )
+    auction = models.ForeignKey(
+        Auction, on_delete=models.CASCADE, related_name="favorites"
+    )
+    isFavorite = models.BooleanField(default=False)
+
+
+# Para imagenes haz IMageField(upload_to = "ryta")
+# para valores por defecto pones default
