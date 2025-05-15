@@ -12,3 +12,14 @@ class IsOwnerOrAdmin(BasePermission):
             return True
         # Permitir si el usuario es el creador o es administrador
         return obj.auctioneer == request.user or request.user.is_staff
+    
+
+
+class IsBidOwnerOrAdmin(BasePermission):
+    """
+    Permite acceso sólo al propietario de la puja o a un admin.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.bidder == request.user or request.user.is_staff

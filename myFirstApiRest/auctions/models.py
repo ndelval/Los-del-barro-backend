@@ -85,7 +85,7 @@ class Commentary(models.Model):
 
 class Wallet(models.Model):
     user = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="wallet"
+        CustomUser, on_delete=models.CASCADE, related_name="wallet", unique = True
     )
     credit_card = models.CharField(max_length=19, null=True, blank=True)
     money = models.DecimalField(max_digits=10, decimal_places=2, default=0)

@@ -23,7 +23,7 @@ from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .permissions import IsOwnerOrAdmin
+from .permissions import IsOwnerOrAdmin, IsBidOwnerOrAdmin
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from django.utils.dateparse import parse_datetime, parse_date
 from django.utils import timezone
@@ -229,21 +229,12 @@ class BidListCreateView(generics.ListCreateAPIView):
 class BidRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = BidSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsBidOwnerOrAdmin]
 
-    def get_object(self):
+    def get_queryset(self):
         auction_id = self.kwargs["auction_id"]
-        bid_id = self.kwargs["bid_id"]
+        return Bid.objects.filter(auction__id=auction_id)
 
-        bid = get_object_or_404(Bid, id=bid_id, auction__id=auction_id)
-
-        if bid.bidder.username != self.request.user.username:
-            raise ValidationError("Solo puedes modificar tus pujas.")
-
-        if bid.auction.closing_date <= timezone.now():
-            raise ValidationError("No puedes modificar pujas en subastas cerradas.")
-
-        return bid
 
     def perform_update(self, serializer):
         new_price = serializer.validated_data["price"]

@@ -30,7 +30,7 @@ urlpatterns = [
     path("<int:pk>/", AuctionRetrieveUpdateDestroy.as_view(), name="auction-detail"),
     path("<int:auction_id>/bids/", BidListCreateView.as_view(), name="bid-list-create"),
     path(
-        "<int:auction_id>/bids/<int:bid_id>/",
+        "<int:auction_id>/bids/<int:pk>/",
         BidRetrieveUpdateDestroyView.as_view(),
         name="bid-retrieve-update-destroy",
     ),
