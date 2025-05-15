@@ -29,7 +29,12 @@ SECRET_KEY = "django-insecure-w1s1la(tbzzzv@xw$3-2f^v+4!^j=g4hel*9&v%00z@8a$7^nz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0', "los-del-barro-backend.onrender.com"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+    "los-del-barro-backend.onrender.com",
+]
 
 
 # Application definition
@@ -41,10 +46,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework", #para importar el framework django REST al proyecto
+    "rest_framework",  # para importar el framework django REST al proyecto
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
-    "drf_spectacular", #para importar la extensión drf spectacular al proyecto
+    "drf_spectacular",  # para importar la extensión drf spectacular al proyecto
     "auctions",
     "users",
     "corsheaders",
@@ -88,7 +93,10 @@ WSGI_APPLICATION = "myFirstApiRest.wsgi.application"
 
 load_dotenv()
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv("DATABASE_URL"))
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
 
 # Password validation
@@ -133,24 +141,30 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 5,
+    "PAGE_SIZE": 100,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
 }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "API Auctions",
     "DESCRIPTION": "Auctios web",
-    "VERSION": "1.0.0" ,
+    "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
 TIME_ZONE = "Europe/Madrid"
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://los-del-barro-backend.onrender.com", "https://los-del-barro-backend.onrender.com", "https://los-del-barro-fowu.vercel.app"]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://los-del-barro-backend.onrender.com",
+    "https://los-del-barro-backend.onrender.com",
+    "https://los-del-barro-fowu.vercel.app",
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -162,4 +176,3 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = "users.CustomUser"
-

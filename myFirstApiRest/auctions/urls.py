@@ -15,6 +15,8 @@ from .views import (
     WalletListCreateView,
     WalletRetrieveUpdateDestroyView,
     UserCommentaryListView,
+    FavoritesListCreateView,
+    FavoritesRetrieveUpdateDestroyView,
 )
 
 app_name = "auctions"
@@ -60,5 +62,15 @@ urlpatterns = [
         "<int:auction_id>/comments/<int:comment_id>/",
         CommentaryRetrieveUpdateDestroyView.as_view(),
         name="comment-retrieve-update-destroy",
+    ),
+    path(
+        "<int:auction_id>/favorites/add/",
+        FavoritesListCreateView.as_view(),
+        name="favorites-add",
+    ),
+    path(
+        "<int:auction_id>/favorites/change/",
+        FavoritesRetrieveUpdateDestroyView.as_view(),
+        name="favorites-change",
     ),
 ]

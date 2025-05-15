@@ -87,7 +87,7 @@ class Commentary(models.Model):
 
 class Wallet(models.Model):
     user = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="wallet"
+        CustomUser, on_delete=models.CASCADE, related_name="wallet", unique=True
     )
     credit_card = models.CharField(
         max_length=19, null=True, blank=True
@@ -98,6 +98,16 @@ class Wallet(models.Model):
 
     def __str__(self):
         return f"Wallet de {self.user.username}"
+
+
+class Favorites(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="favorites"
+    )
+    auction = models.ForeignKey(
+        Auction, on_delete=models.CASCADE, related_name="favorites"
+    )
+    isFavorite = models.BooleanField(default=False)
 
 
 # Para imagenes haz IMageField(upload_to = "ryta")

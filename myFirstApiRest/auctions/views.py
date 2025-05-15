@@ -1,10 +1,10 @@
 # Create your views here.
-from rest_framework import generics, status
+from rest_framework import generics, status, viewsets
 
 from users.models import CustomUser
 
 # from myFirstApiRest.users.models import CustomUser
-from .models import Category, Auction, Bid, Commentary, Rating, Wallet
+from .models import Category, Auction, Bid, Commentary, Rating, Wallet, Favorites
 from .serializers import (
     CategoryListCreateSerializer,
     CategoryDetailSerializer,
@@ -17,6 +17,7 @@ from .serializers import (
     UserRatingSerializer,
     WalletSerializer,
     UserCommentarySerializer,
+    FavoritesSerializer,
 )
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
@@ -237,8 +238,15 @@ class BidListCreateView(generics.ListCreateAPIView):
         auction = get_object_or_404(Auction, id=auction_id)
 
         highest_bid = auction.bids.order_by("-price").first()
+
+        initial_price = auction.price
         new_price = serializer.validated_data["price"]
 
+        if new_price <= initial_price:
+            raise ValidationError(
+                {"price": "La puja debe ser mayor al precio inicial."},
+                code=status.HTTP_400_BAD_REQUEST,
+            )
         # Validación para puja más alta
         if highest_bid and new_price <= highest_bid.price:
             raise ValidationError(
@@ -496,3 +504,130 @@ class WalletRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
         # Guardamos los cambios
         serializer.save()
+
+
+class FavoritesListCreateView(generics.ListCreateAPIView):
+    serializer_class = FavoritesSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        auction_id = self.kwargs["auction_id"]
+        auction = get_object_or_404(Auction, id=self.kwargs["auction_id"])
+        queryset = Favorites.objects.filter(auction=auction, user=self.request.user)
+        return queryset
+
+    def perform_create(self, serializer):
+        auction_id = self.kwargs["auction_id"]
+        auction = Auction.objects.get(id=auction_id)
+        serializer.save(auction=auction, user=self.request.user)
+
+
+class FavoritesRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = FavoritesSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        auction_id = self.kwargs["auction_id"]
+        auction = get_object_or_404(Auction, id=self.kwargs["auction_id"])
+        print(auction)
+        queryset = Favorites.objects.filter(auction=auction, user=self.request.user)
+        print(queryset)
+        return queryset
+
+    #! IMPORTANTE si haces un retirve update delete en una url sin pk tienes que modificar a mano el get_object
+    def get_object(self):
+        queryset = self.get_queryset()
+        # Obtener el primer objeto (debería ser único por usuario y subasta)
+        favorite = queryset.first()
+        if not favorite:
+            raise ValidationError("No se encontró el favorito para esta subasta.")
+        return favorite
+
+
+"""
+
+1. Listar (GET colección, p.ej. ListAPIView / ListCreateAPIView)
+dispatch()
+
+    get(request…) → list(request…)
+
+    get_queryset()
+
+    filter_queryset(qs)
+
+    paginate_queryset(qs)
+
+    get_serializer(page, many=True)
+
+    Response(serializer.data) (o paginada)
+
+    No hay get_object() ni perform_create / perform_update aquí.
+
+2. Recuperar detalle (GET único, RetrieveAPIView)
+dispatch()
+
+    get(request…) → retrieve(request…)
+
+    get_object()
+
+    internamente hace get_queryset() → filter_queryset() → lookup por PK
+
+    get_serializer(obj)
+
+    Response(serializer.data)
+
+3. Crear (POST, CreateAPIView / ListCreateAPIView)
+dispatch()
+
+    post(request…) → create(request…)
+
+    get_serializer(data=request.data)
+
+    serializer.is_valid(raise_exception=True)
+
+    perform_create(serializer) (por defecto serializer.save())
+
+    Response(serializer.data, status=201)
+
+    No se invoca get_queryset() ni get_object().
+
+4. Actualizar (PUT/PATCH, UpdateAPIView / RetrieveUpdateAPIView)
+dispatch()
+
+    put/patch(request…) → update(request…) / partial_update(request…)
+
+    get_object()
+
+    get_serializer(instance, data=request.data, partial=…)
+
+    serializer.is_valid(raise_exception=True)
+
+    perform_update(serializer) (por defecto serializer.save())
+
+    Response(serializer.data)
+
+5. Borrar (DELETE, DestroyAPIView / RetrieveDestroyAPIView)
+dispatch()
+
+    delete(request…) → destroy(request…)
+
+    get_object() -> que llama a get_queryset
+
+    perform_destroy(instance) (por defecto instance.delete())
+
+    Response(status=204)
+
+Resumen de cuándo se llaman
+
+    get_queryset() → siempre que necesites una lista (list) o como base de get_object().
+
+    get_object() → en retrieve, update y destroy; internamente llama a get_queryset().
+
+    get_serializer(data=…) → en create.
+
+    get_serializer(instance,…) → en list, retrieve y update.
+
+    hooks (perform_create, perform_update, perform_destroy) reciben el serializer o la instancia ya obtenida y ejecutan el .save() o .delete().
+
+
+"""
